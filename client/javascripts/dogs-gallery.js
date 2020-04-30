@@ -1,39 +1,58 @@
-// jshint esversion: 6
+// jshint esversion: 7
+
+let failHandler = () => {
+  // console.log("Fail -- unknown breed");
+  $(".photos")
+    .empty()
+    .html("<h3>Error -- breed not found <h3>");
+};
 
 //1. Define the onclick handler
 let clickHandler = function() {
   let imgElem;
-  let prefixURL =
-    "http://api.flickr.com/services/feeds/photos_public.gne?tags=";
-  let suffixURL = "&format=json&jsoncallback=?";
+  let prefixURL = "https://dog.ceo/api/breed/";
+  let suffixURL = "/images/random/6";
   //get value entered by user from textbox
-  let flickrTag = document.querySelector('input[type = "text"]').value;
-  let requestURL = prefixURL + flickrTag + suffixURL;
+
+  let breedTag = $('input[type = "text"]')
+    .val()
+    .toLowerCase();
+
+  /*let breedTag = document
+    .querySelector('input[type = "text"]')
+    .value.toLowerCase();
+  */
+  console.log(breedTag);
+  let requestURL = prefixURL + breedTag + suffixURL;
+  // console.log(requestURL);
+
+  //$() returns a jQuery collection of html elements
+  // it can be used like querySelectorAll
+  //console.log(document.querySelectorAll("h2")[0].textContent);
+  //console.log($("h2")[0].textContent);
 
   //clear old photos
-  document.querySelector(".photos").innerHTML = "";
+  $(".photos").html("");
+  /*document.querySelector(".photos").innerHTML = "";*/
 
-  $.getJSON(requestURL, function(flickrResponse) {
-    flickrResponse.items.forEach(function(item, index) {
-      //Flickr returns 20 images by default
-      //We need only six images for the Gallery
-      if (index < 6) {
-        // create a new element to hold the image
-        // but hide it so we can fade it in
-        let imgElem = document.createElement("img");
-        imgElem.hidden = true;
+  $.getJSON(requestURL, function(dogAPIresponse) {
+    //console.log(dogAPIresponse.message);
+    dogAPIresponse.message.forEach((imgURL, index) => {
+      // create a new element to hold the image
+      let imgElem = $("<img>");
+      //let imgElem = document.createElement("img");
+      imgElem.hidden = true;
 
-        // set the attribute to the response url
-        imgElem.setAttribute("src", item.media.m);
-        imgElem.setAttribute("width", "100");
+      // set the attribute to the response url
+      imgElem.attr("src", imgURL);
+      imgElem.attr("width", "100");
 
-        // attach the img tag to the main
-        // photos element and then fade it in
-        document.querySelector(".photos").appendChild(imgElem);
-        imgElem.hidden = false;
-      }
+      // attach the img tag to the main photos div
+      $(".photos").append(imgElem);
+      //document.querySelector(".photos").appendChild(imgElem);
+      imgElem.hidden = false;
     });
-  });
+  }).fail(failHandler);
 };
 
 //2. Register the onclick handler for each button after the DOM is complete
